@@ -97,3 +97,11 @@ class TestRetrieveTokens:
         """Unicode text"""
         
         assert False
+
+
+def test_index(html_page):
+    """index() updates the inverted index correctly."""
+    ii = {"internet": {1, 2}, "googl": {1}}
+    
+    index(html_page, ii)
+    assert ii["internet"] == {1, 2, 3} and ii["googl"] == {1, 3}

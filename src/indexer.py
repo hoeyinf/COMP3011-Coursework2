@@ -35,3 +35,8 @@ def retrieve_tokens(text):
     return stems
 
 
+def index(html, inverted_index):
+    """Indexes the html page onto the inverted index."""
+    
+    
+    return
