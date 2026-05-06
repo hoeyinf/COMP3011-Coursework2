@@ -1,6 +1,7 @@
 """Functions for a web crawler."""
 import re
 import requests
+import time
 from bs4 import BeautifulSoup
 
 
@@ -21,11 +22,13 @@ def retrieve_links(html, base_url):
     # Loops through every <a href> tag
     for tag in soup.find_all("a", href=True):
         
-        # Adds links, differentiating between absolute and relative urls.
+        # Defines a regular expression for an absolute URL
         absolute = re.compile(r"^(https:\/\/|www\.)[^ :]+$")
-        # Matches an absoulte url and is not the base url (self-link)
+        
+        # If it matches an absoulte url and is not the base url (self-link)
         if absolute.match(tag["href"]) and tag["href"] != base_url:
             links.add(tag["href"])
+        # Else it is a relative url
         else:
             links.add(base_url + tag["href"])
 
@@ -50,7 +53,36 @@ def retrieve_page(url):
     return response.text
 
 
-def crawl():
-    """For now it retrieves a list of links accessible from the root url."""
+def crawl(seed):
+    """Perform a web crawl using a provided seed URL.
+    
+    Args:
+        seeds (list): seed URL to start a crawl.
+    """
+    visited = set()
+    retrieval_time = time.time() - 6
+
+    # Initializes queue and loops until it is empty.
+    queue = [seed]
+    while queue:
+        url = queue.pop(0)
+        if url in visited: continue
+
+        # Obeys politeness window of at least 6 seconds
+        i = 0
+        while time.time() - retrieval_time < 6:
+            time.sleep(1)
+
+        # Downloads page and adds it to the visited list
+        html = retrieve_page(url)
+        retrieval_time = time.time()
+        print(f"{url} visited\n")
+        visited.add(url)
+        
+        # Adds links that have not been visited to the queue
+        links = retrieve_links(html, url)
+        for link in links:
+            if link not in visited:
+                queue.append(link)
     return
 
