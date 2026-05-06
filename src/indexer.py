@@ -1,11 +1,37 @@
 """Functions for an indexer."""
+import string
+import nltk
+from nltk.corpus import stopwords
+from nltk.stem.snowball import SnowballStemmer
+from nltk.tokenize import word_tokenize
 
-def retrieve_words(text):
+# move these to main.py (run once)
+nltk.download('punkt_tab')
+nltk.download('stopwords')
+
+def retrieve_tokens(text):
     """Retrieve significant words from provided text."""
     
-    return []
+    # Removes apostrophes: e.g. can't -> cant
+    text = text.replace("'", "")
+    # Replaces hyphens with spaces: e.g. hand-drawn -> hand drawn
+    text = text.replace("-", " ")
 
-# 1. html document -> text using beautifulsoup
-# 2. text -> tokens (list)
-# 3. tokens -> stopword removal
-# 4. stemming (set)
+    # Tokenizes the text
+    tokens = word_tokenize(text, 'english')
+
+    # Removes stopwords
+    stop_words = set(stopwords.words('english'))
+    tokens = [token for token in tokens if token not in stop_words]
+    
+    # Performs stemming
+    stemmer = SnowballStemmer('english')
+    stems = set()
+    [stems.add(stemmer.stem(token)) for token in tokens]
+    
+    # Removes single punctuation marks
+    [stems.discard(punc) for punc in string.punctuation]
+
+    return stems
+
+
