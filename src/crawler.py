@@ -5,7 +5,15 @@ from bs4 import BeautifulSoup
 
 
 def retrieve_links(html, base_url):
-    """Retrieves the unique url links in an HTML page."""
+    """Retrieve the unique url links in an HTML page.
+    
+    Args:
+        html (str): the HTML page to be parsed.
+        base_url (str): the base URL of the HTML page.
+    
+    Returns:
+        set: Unique links found.
+    """
 
     soup = BeautifulSoup(html, "html.parser")
     links = set()
@@ -22,7 +30,17 @@ def retrieve_links(html, base_url):
 
 
 def retrieve_page(url):
-    """Retrieves an HTML page via a GET request to a supplied url."""
+    """Retrieve an HTML page via a GET request.
+    
+    Args:
+        url (str): the url used for the GET request
+    
+    Returns:
+        str: The HTML of the web page.
+    
+    Raises:
+        HTTPError: An HTTP error.
+    """
 
     response = requests.get(url)
     response.raise_for_status()

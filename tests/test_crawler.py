@@ -23,7 +23,7 @@ def html_page(request):
 
 
 class TestRetrieveLinks:
-    """Tests for retreive_links()"""
+    """Tests for retrieve_links()"""
     
     @pytest.mark.parametrize(
         "html_page",
@@ -31,7 +31,7 @@ class TestRetrieveLinks:
         indirect=True
     )
     def test_absolute_urls(self, html_page):
-        """Finds absolute urls."""
+        """Find absolute urls."""
         links = retrieve_links(html_page, "https://quotes.toscrape.com")
         assert links == {"www.google.com", "https://minerva.leeds.ac.uk"}
 
@@ -41,7 +41,7 @@ class TestRetrieveLinks:
         indirect=True
     )
     def test_relative_urls(self, html_page):
-        """Finds relative urls."""
+        """Find relative urls."""
         base_url = "https://quotes.toscrape.com"
         links = retrieve_links(html_page, "https://quotes.toscrape.com")
         assert links == {base_url+"/about", base_url+"/users/123"}
@@ -52,7 +52,7 @@ class TestRetrieveLinks:
         indirect=True
     )
     def test_absolute_and_relative_urls(self, html_page):
-        """Finds multiple mixed urls."""
+        """Find multiple mixed urls."""
         base_url = "https://quotes.toscrape.com"
         links = retrieve_links(html_page, "https://quotes.toscrape.com")
         assert links == {
@@ -62,7 +62,7 @@ class TestRetrieveLinks:
 
     @pytest.mark.parametrize("html_page", [{}], indirect=True)
     def test_no_urls(self, html_page):
-        """Handles pages with no links."""
+        """Handle pages with no links."""
         links = retrieve_links(html_page, "https://quotes.toscrape.com")
         assert links == set()
 
@@ -72,20 +72,20 @@ class TestRetrieveLinks:
         indirect=True
     )
     def test_duplicate_urls(self, html_page):
-        """Parses duplicate urls correctly."""
+        """Parse duplicate urls correctly."""
         base_url = "https://quotes.toscrape.com"
         links = retrieve_links(html_page, "https://quotes.toscrape.com")
         assert links == {"www.google.com", base_url+"/users/1"}
 
     def test_disallowed(self):
-        """Avoids a disallowed link from a robot.txt file."""
+        """Avoid a disallowed link from a robot.txt file."""
         assert False
 
 class TestRetrievePage:
     """Tests for retrieve_page()"""
 
     def test_valid(self):
-        """Fetches an HTML page using a valid link."""
+        """Fetch an HTML page using a valid link."""
         try:
             html = retrieve_page("https://www3.pioneer.com/argentina/PETWS/test"
                                 ".html")
@@ -99,7 +99,7 @@ class TestRetrievePage:
                         "site</p>\r\n</body>\r\n</html>")
         
     def test_invalid(self):
-        """Handles retrieval using an invalid link."""
+        """Handle an invalid link."""
         try:
             html = retrieve_page("https://www.google.com/404")
         except requests.exceptions.HTTPError as e:
