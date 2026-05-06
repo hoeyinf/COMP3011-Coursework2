@@ -77,14 +77,14 @@ class TestRetrieveLinks:
         links = retrieve_links(html_page, "https://quotes.toscrape.com")
         assert links == {"www.google.com", base_url+"/users/1"}
 
-    def test_disallowed(self, html_page):
+    def test_disallowed(self):
         """Avoids a disallowed link from a robot.txt file."""
         assert False
 
 class TestRetrievePage:
     """Tests for retrieve_page()"""
 
-    def test_valid():
+    def test_valid(self):
         """Fetches an HTML page using a valid link."""
         try:
             html = retrieve_page("https://www3.pioneer.com/argentina/PETWS/test"
@@ -92,13 +92,13 @@ class TestRetrievePage:
         except requests.exceptions.HTTPError as e:
             pass
 
-        assert html == ("<html>\n<head>\n"
-                        "<title>This is a test static html page</title>\n"
-                        "</head>\n<body>"
+        assert html == ("<html>\r\n<head>\r\n"
+                        "<title>This is a test static html page</title>\r\n"
+                        "</head>\r\n\r\n<body>\r\n"
                         "<p>This is a test static html page for PETWS web "
-                        "site\n</p>\n</body></html>")
+                        "site</p>\r\n</body>\r\n</html>")
         
-    def test_invalid():
+    def test_invalid(self):
         """Handles retrieval using an invalid link."""
         try:
             html = retrieve_page("https://www.google.com/404")

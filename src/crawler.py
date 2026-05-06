@@ -1,7 +1,7 @@
 """Functions for a web crawler."""
-
-from bs4 import BeautifulSoup
 import re
+import requests
+from bs4 import BeautifulSoup
 
 
 def retrieve_links(html, base_url):
@@ -21,9 +21,12 @@ def retrieve_links(html, base_url):
     return links
 
 
-def retrieve_page():
-    """Retrieves an HTML page via a GET request."""
-    return
+def retrieve_page(url):
+    """Retrieves an HTML page via a GET request to a supplied url."""
+
+    response = requests.get(url)
+    response.raise_for_status()
+    return response.text
 
 
 def crawl():
