@@ -33,15 +33,44 @@ class TestRetrieveTokens:
                               ("single", 1),
                               ("multiple significant words used precisely", 5),
                               ("paragraphs\n\nnecessarily\nwork properly", 4),
-                              ("however, punctuation exists everywhere!", 4)])
+                              ("however, punctuation exists everywhere!", 4),
+                              ("John Doe Leeds United Kingdom", 5),
+                              ("Ms. Tan www.google.com p.m e.g.", 5)])
     def test_words_in_strings(self, string, expected):
-        """Identify correct number of tokens in a variety of strings.
+        """Identify the correct number of tokens in a variety of strings.
         
         Specifically: no words, one word, multiple words, paragraphs,
-        and a sentence with punctuation.
+        general punctuation, capitalization, and periods.
         """
         words = retrieve_tokens(string)
         assert len(words) == expected, words
+        
+    @pytest.mark.parametrize("string,expected",
+                             [("t-shirt", 1),
+                              ("hand-drawn", 2),
+                              ("em-dash", 2)])
+    def test_hyphens(self, string, expected):
+        """Identify the correct number of tokens in words with hyphens."""
+        words = retrieve_tokens(string)
+        assert len(words) == expected, words
+        
+    def test_apostrophes(self):
+        """Identify the correct tokens in a string with apostrophes."""
+        words = retrieve_tokens("don't can't Michael's people's "
+                                "2000's womens' o'donnell")
+        assert len(words) == 7, words
+        
+    @pytest.mark.parametrize("string,expected",
+                             [("1 256 987654", 3),
+                              ("3.1415", 1),
+                              ("3.000 12,345  1,024.20480 678.901,24", 4)])
+    def test_numbers(self, string, expected):
+        """Identify numbers correctly."""
+        numbers = set()
+        [numbers.add(number) for number in string.split()]
+        words = retrieve_tokens(string)
+        assert len(words) == expected, words
+        assert words == numbers
     
     @pytest.mark.parametrize("string,expected",
                              [("this is a sentence", 1),
@@ -68,5 +97,3 @@ class TestRetrieveTokens:
         """Unicode text"""
         
         assert False
-
-        # Add tests for: capitalization, hyphenation, apostrophes, numbers (decimals, commas/period delimiters), titles (mrs. ph.d)
