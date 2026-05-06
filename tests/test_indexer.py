@@ -101,7 +101,7 @@ class TestRetrieveTokens:
 
 def test_index(html_page):
     """index() updates the inverted index correctly."""
-    ii = {"internet": {1, 2}, "googl": {1}}
+    ii = {"internet": {0, 1}, "googl": {1}}
     
-    index(html_page, ii)
-    assert ii["internet"] == {1, 2, 3} and ii["googl"] == {1, 3}
+    index(html_page, 2, ii)
+    assert ii["internet"] == {0, 1, 2} and ii["googl"] == {1, 2}

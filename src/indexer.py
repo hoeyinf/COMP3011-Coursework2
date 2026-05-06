@@ -1,6 +1,7 @@
 """Functions for an indexer."""
 import string
 import nltk
+from bs4 import BeautifulSoup
 from nltk.corpus import stopwords
 from nltk.stem.snowball import SnowballStemmer
 from nltk.tokenize import word_tokenize
@@ -35,8 +36,15 @@ def retrieve_tokens(text):
     return stems
 
 
-def index(html, inverted_index):
+def index(html, page_number, inverted_index):
     """Indexes the html page onto the inverted index."""
+    soup = BeautifulSoup(html, 'html.parser')
+    tokens = retrieve_tokens(soup.text)
     
-    
-    return
+    for token in tokens:
+        if token in inverted_index:
+            inverted_index[token].add(page_number)
+        else:
+            inverted_index[token] = {page_number}
+
+    return inverted_index
