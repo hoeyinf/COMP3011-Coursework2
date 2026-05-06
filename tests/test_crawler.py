@@ -1,13 +1,15 @@
 """Tests for src/crawler.py"""
 
 import pytest
+import requests
+from unittest.mock import patch
 from src.crawler import *
 
 
 @pytest.fixture(scope='function')
 def html_page(request):
     """Modifiable fixture for an HTML page."""
-    page = """<html lang="en">
+    page = """<!doctype html><html lang="en">
               <head><meta charset="UTF-8"><title>Mock HTML Page</title>
               <link rel="stylesheet" href="/static/bootstrap.min.css"></head>
               <body><div class="container">"""
@@ -80,10 +82,28 @@ class TestRetrieveLinks:
         assert False
 
 class TestRetrievePage:
-    def test_basic():
-        """Fetches and downloads a correct html page using a link."""
-        assert False
+    """Tests for retrieve_page()"""
 
-    def test_error():
-        """Handles errors."""
-        assert False
+    def test_valid():
+        """Fetches an HTML page using a valid link."""
+        try:
+            html = retrieve_page("https://www3.pioneer.com/argentina/PETWS/test"
+                                ".html")
+        except requests.exceptions.HTTPError as e:
+            pass
+
+        assert html == ("<html>\n<head>\n"
+                        "<title>This is a test static html page</title>\n"
+                        "</head>\n<body>"
+                        "<p>This is a test static html page for PETWS web "
+                        "site\n</p>\n</body></html>")
+        
+    def test_invalid():
+        """Handles retrieval using an invalid link."""
+        try:
+            html = retrieve_page("https://www.google.com/404")
+        except requests.exceptions.HTTPError as e:
+            assert e.response.status_code == 404, "Wrong status code."
+        else:
+            assert False, "No HTTPError raised."
+        
