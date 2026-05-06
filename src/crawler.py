@@ -23,8 +23,11 @@ def retrieve_links(html, base_url):
         
         # Adds links, differentiating between absolute and relative urls.
         absolute = re.compile(r"^(https:\/\/|www\.)[^ :]+$")
-        if absolute.match(tag["href"]): links.add(tag["href"])
-        else: links.add(base_url + tag["href"])
+        # Matches an absoulte url and is not the base url (self-link)
+        if absolute.match(tag["href"]) and tag["href"] != base_url:
+            links.add(tag["href"])
+        else:
+            links.add(base_url + tag["href"])
 
     return links
 

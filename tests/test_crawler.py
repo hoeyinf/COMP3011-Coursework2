@@ -90,7 +90,7 @@ class TestRetrievePage:
             html = retrieve_page("https://www3.pioneer.com/argentina/PETWS/test"
                                 ".html")
         except requests.exceptions.HTTPError as e:
-            pass
+            html = "HTTPError"
 
         assert html == ("<html>\r\n<head>\r\n"
                         "<title>This is a test static html page</title>\r\n"
@@ -106,4 +106,15 @@ class TestRetrievePage:
             assert e.response.status_code == 404, "Wrong status code."
         else:
             assert False, "No HTTPError raised."
-        
+
+@pytest.mark.integrity
+def test_retrieve_page_and_retrieve_links():
+    """Correct function of retrieve_page into retrieve_links()"""
+    url = "https://quotes.toscrape.com"
+    try:
+        html = retrieve_page(url)
+    except requests.exceptions.HTTPError as e:
+        assert False, "retrieve_page() failed."
+    else:
+        links = retrieve_links(html, url)
+        assert len(links) == 49, links
