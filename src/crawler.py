@@ -1,12 +1,30 @@
 """Functions for a web crawler."""
 
+from bs4 import BeautifulSoup
+import re
+
+
+def retrieve_links(html, base_url):
+    """Retrieves the unique url links in an HTML page."""
+
+    soup = BeautifulSoup(html, "html.parser")
+    links = set()
+
+    # Loops through every <a href> tag
+    for tag in soup.find_all("a", href=True):
+        
+        # Adds links, differentiating between absolute and relative urls.
+        absolute = re.compile(r"^(https:\/\/|www\.)[^ :]+$")
+        if absolute.match(tag["href"]): links.add(tag["href"])
+        else: links.add(base_url + tag["href"])
+
+    return links
+
+
 def retrieve_page():
     """Retrieves an HTML page via a GET request."""
     return
-    
-def retrieve_links():
-    """Retrieves the unique url links in an HTML page."""
-    return
+
 
 def crawl():
     """For now it retrieves a list of links accessible from the root url."""

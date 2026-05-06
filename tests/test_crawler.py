@@ -4,7 +4,7 @@ import pytest
 from src.crawler import *
 
 
-@pytest.fixture
+@pytest.fixture(scope='function')
 def html_page(request):
     """Modifiable fixture for an HTML page."""
     page = """<html lang="en">
@@ -30,18 +30,18 @@ class TestRetrieveLinks:
     )
     def test_absolute_urls(self, html_page):
         """Finds absolute urls."""
-        links = retrieve_links(html_page)
+        links = retrieve_links(html_page, "https://quotes.toscrape.com")
         assert links == {"www.google.com", "https://minerva.leeds.ac.uk"}
 
     @pytest.mark.parametrize(
         "html_page",
-        [{"/about", "/users/123"}],
+        [["/about", "/users/123"]],
         indirect=True
     )
     def test_relative_urls(self, html_page):
         """Finds relative urls."""
         base_url = "https://quotes.toscrape.com"
-        links = retrieve_links(html_page)
+        links = retrieve_links(html_page, "https://quotes.toscrape.com")
         assert links == {base_url+"/about", base_url+"/users/123"}
 
     @pytest.mark.parametrize(
@@ -52,7 +52,7 @@ class TestRetrieveLinks:
     def test_absolute_and_relative_urls(self, html_page):
         """Finds multiple mixed urls."""
         base_url = "https://quotes.toscrape.com"
-        links = retrieve_links(html_page)
+        links = retrieve_links(html_page, "https://quotes.toscrape.com")
         assert links == {
             "www.google.com", "https://site.org",
             base_url+"/about", base_url+"/users/123"
@@ -61,19 +61,19 @@ class TestRetrieveLinks:
     @pytest.mark.parametrize("html_page", [{}], indirect=True)
     def test_no_urls(self, html_page):
         """Handles pages with no links."""
-        links = retrieve_links(html_page)
-        assert links == {}
+        links = retrieve_links(html_page, "https://quotes.toscrape.com")
+        assert links == set()
 
     @pytest.mark.parametrize(
         "html_page",
-        [{"/users/1", "www.google.com", "/users/1"}],
+        [["/users/1", "www.google.com", "/users/1"]],
         indirect=True
     )
     def test_duplicate_urls(self, html_page):
         """Parses duplicate urls correctly."""
         base_url = "https://quotes.toscrape.com"
-        links = retrieve_links(html_page)
-        assert links == {"www.google.com", base_url+"/about"}
+        links = retrieve_links(html_page, "https://quotes.toscrape.com")
+        assert links == {"www.google.com", base_url+"/users/1"}
 
     def test_disallowed(self, html_page):
         """Avoids a disallowed link from a robot.txt file."""
