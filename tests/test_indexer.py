@@ -25,8 +25,8 @@ def html_page():
     return page
 
 
-class TestRetrieveWords:
-    """"Tests for retrieve_is()"""
+class TestRetrieveTokens:
+    """"Tests for retrieve_tokens()"""
 
     @pytest.mark.parametrize("string,expected",
                              [("", 0),
@@ -35,12 +35,12 @@ class TestRetrieveWords:
                               ("paragraphs\n\nnecessarily\nwork properly", 4),
                               ("however, punctuation exists everywhere!", 4)])
     def test_words_in_strings(self, string, expected):
-        """Identify correct number of words in a variety of strings.
+        """Identify correct number of tokens in a variety of strings.
         
         Specifically: no words, one word, multiple words, paragraphs,
         and a sentence with punctuation.
         """
-        words = retrieve_words(string)
+        words = retrieve_tokens(string)
         assert len(words) == expected, words
     
     @pytest.mark.parametrize("string,expected",
@@ -51,7 +51,7 @@ class TestRetrieveWords:
         """Perform correct stopword removal."""
         stopwords = ["this", "is", "a", "few", "to", "be", "or", "not"]
 
-        words = retrieve_words(string)
+        words = retrieve_tokens(string)
         assert [word not in words for word in stopwords]
         assert len(words) == expected, words
 
@@ -61,7 +61,7 @@ class TestRetrieveWords:
                               ("stare stared staring stares", 4),])
     def test_stemming(self, string, count):
         """Perform reasonable stemming."""
-        words = retrieve_words(string)
+        words = retrieve_tokens(string)
         assert len(words) < count, words
 
     def test_unicode(self):
