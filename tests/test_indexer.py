@@ -1,7 +1,7 @@
 """Tests for src/indexer.py"""
 
 import pytest
-from src.indexer import *
+from indexer import *
 
 
 @pytest.fixture(scope='function')

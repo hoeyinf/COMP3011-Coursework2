@@ -1,18 +1,16 @@
 """Functions for an indexer."""
 import string
-import nltk
 from bs4 import BeautifulSoup
 from nltk.corpus import stopwords
 from nltk.stem.snowball import SnowballStemmer
 from nltk.tokenize import word_tokenize
 
 # move these to main.py (run once)
-nltk.download('punkt_tab')
-nltk.download('stopwords')
+
 
 def retrieve_tokens(text):
     """Retrieve significant words from provided text."""
-    
+    text = text.lower()
     # Removes apostrophes: e.g. can't -> cant
     text = text.replace("'", "")
     # Replaces hyphens with spaces: e.g. hand-drawn -> hand drawn
@@ -39,7 +37,12 @@ def retrieve_tokens(text):
 def index(html, page_number, inverted_index):
     """Indexes the html page onto the inverted index."""
     soup = BeautifulSoup(html, 'html.parser')
-    tokens = retrieve_tokens(soup.text)
+    # Ignores footer content
+    for footer in soup.find_all("footer"):
+        footer.decompose()
+
+
+    tokens = retrieve_tokens(soup.get_text())
     
     for token in tokens:
         if token in inverted_index:

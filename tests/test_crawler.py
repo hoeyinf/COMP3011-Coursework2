@@ -3,7 +3,7 @@
 import pytest
 import requests
 from unittest.mock import patch
-from src.crawler import *
+from crawler import *
 
 
 @pytest.fixture(scope='function')

@@ -3,6 +3,7 @@ import re
 import requests
 import time
 from bs4 import BeautifulSoup
+from indexer import index
 
 
 def retrieve_links(html, base_url):
@@ -48,7 +49,7 @@ def retrieve_page(url):
         HTTPError: An HTTP error.
     """
 
-    response = requests.get(url)
+    response = requests.get(url, headers={"User-Agent": "webcrawler"})
     response.raise_for_status()
     return response.text
 
@@ -59,30 +60,36 @@ def crawl(seed):
     Args:
         seeds (list): seed URL to start a crawl.
     """
-    visited = set()
+    visited = dict()
+    inverted_index = dict()
     retrieval_time = time.time() - 6
 
     # Initializes queue and loops until it is empty.
     queue = [seed]
+    doc_number = 0
     while queue:
         url = queue.pop(0)
-        if url in visited: continue
+        if url in visited.values(): continue
 
         # Obeys politeness window of at least 6 seconds
-        i = 0
         while time.time() - retrieval_time < 6:
             time.sleep(1)
 
         # Downloads page and adds it to the visited list
         html = retrieve_page(url)
         retrieval_time = time.time()
-        print(f"{url} visited\n")
-        visited.add(url)
+        visited[doc_number] = url
+        print(visited)
+        
+        # Indexes the page
+        index(html, doc_number, inverted_index)
+        doc_number += 1
         
         # Adds links that have not been visited to the queue
         links = retrieve_links(html, url)
         for link in links:
             if link not in visited:
                 queue.append(link)
-    return
+
+    return visited, inverted_index
 
