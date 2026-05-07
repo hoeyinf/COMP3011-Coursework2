@@ -36,6 +36,7 @@ class TestNormalizeLink:
                                     "https://example.com?filter=new&search=leeds",
                                     "https://example.com#bar",
                                     "https://example.com:443"])
+    @pytest.mark.benchmark(group="normalize_link()")
     def test_links(self, benchmark, url):
         """Normalize URLS correctly, with performance testing.
         
