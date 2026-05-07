@@ -4,15 +4,49 @@ import requests
 import time
 from bs4 import BeautifulSoup
 from indexer import index
-from urllib.parse import urlparse
+from urllib.parse import urlparse, parse_qs, urlunparse, urlencode
 
 
 def normalize_link(link):
     """Normalizes a link."""
-    # Remove trailing slash
-    if link[-1] == "/":
-        link = link[:-1]
+
+    # Converts to lowercase and removes "www."
+    link = link.lower()
+    link = link.replace("www.", "")
     
+    # Changes all links to start with https://
+    if not link.startswith(("http://", "https://")): link = "https://" + link
+    link = link.replace("http://", "https://")
+    
+    # Removes port numbers, fragments, and all query parameters (except page)
+    parts = urlparse(link)
+    qs = parse_qs(parts.query)
+    new_qs = {}
+    if 'page' in qs:
+        new_qs['page'] = qs['page'][0]
+        
+    link = urlunparse((parts.scheme, parts.netloc.split(":")[0], parts.path, "",
+                       urlencode(new_qs), ""))
+
+    # Finds paginated URLs
+    page_i = link.find("page")
+    if page_i != -1:
+        # Regex first page only ("page=1" or "page/1", but not e.g. "page=10")
+        page_ex = re.compile(r"^page(?:=|/)1(?!\d).*")
+        if page_ex.match(link[page_i:]):
+            # Removes any page that is a first page (assumed to be redundant)
+            link = link.replace(link[page_i:page_i+6], "")
+            
+            # Checks page was a query parameter
+            if link[page_i - 1] == "?":
+                # Deletes either "?" or "&"
+                # depending on if there were other query parameters
+                if len(link) > page_i:
+                    if link[page_i] == "&": page_i += 1
+                link = link.replace(link[page_i - 1], "")
+    
+    # Remove trailing slash
+    link = link.rstrip("/")
     return link
 
 
@@ -45,7 +79,7 @@ def retrieve_links(html, base):
         else: link = tag["href"]
 
         # Normalizes all absolute URLS, skipping skips badly formatted links
-        if absolute.match(link): normalize_link(link)
+        if absolute.match(link): link = normalize_link(link)
         else: continue
         
         # Adds the link only if it leads to the same website domain (base URL)

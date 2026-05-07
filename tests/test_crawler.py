@@ -21,34 +21,43 @@ def html_page(request):
     page += "</div></body></html>"
     return page
 
-    
-@pytest.mark.parametrize("url", ["https://Example.com",
-                                 "https://example.com/",
-                                 "www.example.com",
-                                 "https://www.example.com",
-                                 "http://example.com",
-                                 "https://example.com/page/1",
-                                 "https://example.com?page=1",
-                                 "https://example.com/page=2",
-                                 "https://example.com?page=2",
-                                 "https://example.com?search=friend",
-                                 "https://example.com?filter=new&search=leeds",
-                                 "https://example.com#bar",
-                                 "https://example.com:443"])
-def test_normalize_link(url):
-    """Normalize URLS correctly with normalize_link().
-    
-    Checks for URLS that have: capitals, trailing forward slashes, www.,
-    non-https, pagination, query
-    parameters, fragments, and port numbers.
-    """
-    assert normalize_link(url) == "https://example.com"
-    
 
-def test_normalize_link_complex():
-    """Complex URL normalization with normalize_link()."""
-    link = normalize_link("www.example.com:443/users&page=2&search=jane/")
-    assert link == "https://example.com/users&page=2"
+class TestNormalizeLink:
+    """Tests for normalize_link()."""
+
+    @pytest.mark.parametrize("url", ["https://Example.com",
+                                    "https://example.com/",
+                                    "www.example.com",
+                                    "https://www.example.com",
+                                    "http://example.com",
+                                    "https://example.com/page/1",
+                                    "https://example.com?page=1",
+                                    "https://example.com?search=friend",
+                                    "https://example.com?filter=new&search=leeds",
+                                    "https://example.com#bar",
+                                    "https://example.com:443"])
+    def test_links(self, url):
+        """Normalize URLS correctly.
+        
+        Checks for URLS that have: capitals, trailing forward slashes, www.,
+        non-https, redundant first pages, query parameters, fragments,
+        and port numbers.
+        """
+        assert normalize_link(url) == "https://example.com"
+
+    @pytest.mark.parametrize("url", ["https://example.com?page=10",
+                                     "https://example.com/page/11",
+                                     "https://example.com/page=2"
+                                     "https://example.com?page=3"])
+    def test_pages(self, url):
+        """Do not remove pages that are not 1."""
+        assert normalize_link(url) == url
+                            
+    def test_complex(self):
+        """Complex URL normalization"""
+        
+        link = normalize_link("www.eXample.com:443/users?search=jane&page=2")
+        assert link == "https://example.com/users?page=2"
 
 class TestRetrieveLinks:
     """Tests for retrieve_links()"""
@@ -146,11 +155,11 @@ class TestRetrievePage:
 @pytest.mark.integrity
 def test_retrieve_page_and_retrieve_links():
     """Correct function of retrieve_page into retrieve_links()"""
-    url = "https://quotes.toscrape.com"
+    url = "https://quotes.toscrape.com/tag/abilities"
     try:
         html = retrieve_page(url)
     except requests.exceptions.HTTPError as e:
         assert False, "retrieve_page() failed."
     else:
         links = retrieve_links(html, url)
-        assert len(links) == 49
+        assert len(links) == 15
