@@ -15,8 +15,8 @@ if __name__=="__main__":
     # Remember to implement file handling errors later
     with open(os.path.dirname(__file__) +
               '/../data/inverted_index.p', "wb") as f:
-        pickle.dump(visited, f, protocol=pickle.HIGHEST_PROTOCOL)
-        pickle.dump(inverted_index, f, protocol=pickle.HIGHEST_PROTOCOL)
+        pickle.dump(visited, f)
+        pickle.dump(inverted_index, f)
         
     dicts = []
     with open(os.path.dirname(__file__) +

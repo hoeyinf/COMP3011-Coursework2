@@ -120,12 +120,13 @@ def crawl(seed):
     visited = dict()
     inverted_index = dict()
     retrieval_time = time.time() - 6
-    # Finds the base URL (in case that it's not)
-    parsed = urlparse(normalize_link(seed))
+    # Finds the base URL
+    seed = normalize_link(seed)
+    parsed = urlparse(seed)
     base = f"https://{parsed.netloc}"
 
     # Initializes queue and loops until it is empty.
-    queue = [base]
+    queue = [seed]
     doc_number = 0
     while queue:
         url = queue.pop(0)
@@ -161,8 +162,7 @@ def crawl(seed):
         # Adds links that have not been visited to the queue
         links = retrieve_links(html, base)
         for link in links:
-            if link not in visited:
-                queue.append(link)
+            if link not in visited.values(): queue.append(link)
 
     return visited, inverted_index
 
