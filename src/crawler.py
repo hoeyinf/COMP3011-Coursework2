@@ -4,6 +4,16 @@ import requests
 import time
 from bs4 import BeautifulSoup
 from indexer import index
+from urllib.parse import urlparse
+
+
+def normalize_link(link):
+    """Normalizes a link."""
+    # Remove trailing slash
+    if link[-1] == "/":
+        link = link[:-1]
+    
+    return link
 
 
 def retrieve_links(html, base_url):
@@ -19,6 +29,10 @@ def retrieve_links(html, base_url):
 
     soup = BeautifulSoup(html, "html.parser")
     links = set()
+    
+    # Ignores footer content
+    for footer in soup.find_all("footer"):
+        footer.decompose()
 
     # Loops through every <a href> tag
     for tag in soup.find_all("a", href=True):
@@ -28,10 +42,12 @@ def retrieve_links(html, base_url):
         
         # If it matches an absoulte url and is not the base url (self-link)
         if absolute.match(tag["href"]) and tag["href"] != base_url:
-            links.add(tag["href"])
+            link = tag["href"]
         # Else it is a relative url
         else:
-            links.add(base_url + tag["href"])
+            link = base_url + tag["href"]
+        
+        links.add(normalize_link(link))
 
     return links
 
@@ -48,9 +64,14 @@ def retrieve_page(url):
     Raises:
         HTTPError: An HTTP error.
     """
-
-    response = requests.get(url, headers={"User-Agent": "webcrawler"})
+    response = requests.get(url,
+                        headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; "
+                                 "Win64; x64) AppleWebKit/537.36 (KHTML, like "
+                                 "Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/14"
+                                 "3.0.0.0"},
+                        timeout=10)
     response.raise_for_status()
+        
     return response.text
 
 
@@ -75,18 +96,35 @@ def crawl(seed):
         while time.time() - retrieval_time < 6:
             time.sleep(1)
 
-        # Downloads page and adds it to the visited list
-        html = retrieve_page(url)
+        # Tries to download page, handles request errors
         retrieval_time = time.time()
+        try:
+            html = retrieve_page(url)
+        except requests.exceptions.ConnectionError as e:
+            print(f"Connection error: {url}")
+            print(e)
+            # Re-inserts the url back into the queue to retry
+            queue.insert(1, url)
+            print(queue[0:3])
+            continue
+        except requests.exceptions.HTTPError as e:
+            if e.response.status_code != 404: print(e)
+            continue
+        
+        # Adds page to visited dictionary
         visited[doc_number] = url
-        print(visited)
+        print(url)
         
         # Indexes the page
         index(html, doc_number, inverted_index)
         doc_number += 1
         
+        # Finds the base URL
+        parsed = urlparse(url)
+        base_url = f"{parsed.scheme}://{parsed.netloc}"
+        
         # Adds links that have not been visited to the queue
-        links = retrieve_links(html, url)
+        links = retrieve_links(html, base_url)
         for link in links:
             if link not in visited:
                 queue.append(link)
