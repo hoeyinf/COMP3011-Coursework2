@@ -36,14 +36,15 @@ class TestNormalizeLink:
                                     "https://example.com?filter=new&search=leeds",
                                     "https://example.com#bar",
                                     "https://example.com:443"])
-    def test_links(self, url):
-        """Normalize URLS correctly.
+    def test_links(self, benchmark, url):
+        """Normalize URLS correctly, with performance testing.
         
         Checks for URLS that have: capitals, trailing forward slashes, www.,
         non-https, redundant first pages, query parameters, fragments,
         and port numbers.
         """
-        assert normalize_link(url) == "https://example.com"
+        result = benchmark(normalize_link, link=url)
+        assert result == "https://example.com"
 
     @pytest.mark.parametrize("url", ["https://example.com?page=10",
                                      "https://example.com/page/11",
