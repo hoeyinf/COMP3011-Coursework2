@@ -21,6 +21,34 @@ def html_page(request):
     page += "</div></body></html>"
     return page
 
+    
+@pytest.mark.parametrize("url", ["https://Example.com",
+                                 "https://example.com/",
+                                 "www.example.com",
+                                 "https://www.example.com",
+                                 "http://example.com",
+                                 "https://example.com/page/1",
+                                 "https://example.com?page=1",
+                                 "https://example.com/page=2",
+                                 "https://example.com?page=2",
+                                 "https://example.com?search=friend",
+                                 "https://example.com?filter=new&search=leeds",
+                                 "https://example.com#bar",
+                                 "https://example.com:443"])
+def test_normalize_link(url):
+    """Normalize URLS correctly with normalize_link().
+    
+    Checks for URLS that have: capitals, trailing forward slashes, www.,
+    non-https, pagination, query
+    parameters, fragments, and port numbers.
+    """
+    assert normalize_link(url) == "https://example.com"
+    
+
+def test_normalize_link_complex():
+    """Complex URL normalization with normalize_link()."""
+    link = normalize_link("www.example.com:443/users&page=2&search=jane/")
+    assert link == "https://example.com/users&page=2"
 
 class TestRetrieveLinks:
     """Tests for retrieve_links()"""
@@ -117,4 +145,4 @@ def test_retrieve_page_and_retrieve_links():
         assert False, "retrieve_page() failed."
     else:
         links = retrieve_links(html, url)
-        assert len(links) == 49, links
+        assert len(links) == 49
