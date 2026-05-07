@@ -16,21 +16,21 @@ def normalize_link(link):
     return link
 
 
-def retrieve_links(html, base_url):
+def retrieve_links(html, base):
     """Retrieve the unique url links in an HTML page.
     
     Args:
         html (str): the HTML page to be parsed.
-        base_url (str): the base URL of the HTML page.
+        base (str): the website domain (base URL).
     
     Returns:
         set: Unique links found.
     """
 
-    soup = BeautifulSoup(html, "html.parser")
     links = set()
-    
-    # Ignores footer content
+
+    # Reads HTML, ignoring footer content
+    soup = BeautifulSoup(html, "html.parser")
     for footer in soup.find_all("footer"):
         footer.decompose()
 
@@ -38,16 +38,18 @@ def retrieve_links(html, base_url):
     for tag in soup.find_all("a", href=True):
         
         # Defines a regular expression for an absolute URL
-        absolute = re.compile(r"^(https:\/\/|www\.)[^ :]+$")
+        absolute = re.compile(r"^(https?:\/\/|www\.)[^ :]+$")
         
-        # If it matches an absoulte url and is not the base url (self-link)
-        if absolute.match(tag["href"]) and tag["href"] != base_url:
-            link = tag["href"]
-        # Else it is a relative url
-        else:
-            link = base_url + tag["href"]
+        # Changes relative links to absolute links
+        if tag["href"][0] == "/": link = base + tag["href"]
+        else: link = tag["href"]
+
+        # Normalizes all absolute URLS, skipping skips badly formatted links
+        if absolute.match(link): normalize_link(link)
+        else: continue
         
-        links.add(normalize_link(link))
+        # Adds the link only if it leads to the same website domain (base URL)
+        if link.startswith(base): links.add(link)
 
     return links
 
@@ -84,9 +86,12 @@ def crawl(seed):
     visited = dict()
     inverted_index = dict()
     retrieval_time = time.time() - 6
+    # Finds the base URL (in case that it's not)
+    parsed = urlparse(normalize_link(seed))
+    base = f"https://{parsed.netloc}"
 
     # Initializes queue and loops until it is empty.
-    queue = [seed]
+    queue = [base]
     doc_number = 0
     while queue:
         url = queue.pop(0)
@@ -119,12 +124,8 @@ def crawl(seed):
         index(html, doc_number, inverted_index)
         doc_number += 1
         
-        # Finds the base URL
-        parsed = urlparse(url)
-        base_url = f"{parsed.scheme}://{parsed.netloc}"
-        
         # Adds links that have not been visited to the queue
-        links = retrieve_links(html, base_url)
+        links = retrieve_links(html, base)
         for link in links:
             if link not in visited:
                 queue.append(link)

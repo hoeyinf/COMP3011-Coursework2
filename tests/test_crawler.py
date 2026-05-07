@@ -52,58 +52,66 @@ def test_normalize_link_complex():
 
 class TestRetrieveLinks:
     """Tests for retrieve_links()"""
+    base = "https://example.com"
     
     @pytest.mark.parametrize(
         "html_page",
-        [{"www.google.com", "https://minerva.leeds.ac.uk"}],
+        [{"https://example.com/about", "https://example.com/page/2",
+          "https://example.com"}],
         indirect=True
     )
     def test_absolute_urls(self, html_page):
         """Find absolute urls."""
-        links = retrieve_links(html_page, "https://quotes.toscrape.com")
-        assert links == {"www.google.com", "https://minerva.leeds.ac.uk"}
+        links = retrieve_links(html_page, self.base)
+        assert links == {"https://example.com/about",
+                         "https://example.com/page/2",
+                         "https://example.com"}
 
     @pytest.mark.parametrize(
-        "html_page",
-        [["/about", "/users/123"]],
-        indirect=True
+        "html_page", [["/about", "/page/2", "/users/page/3"]], indirect=True
     )
     def test_relative_urls(self, html_page):
         """Find relative urls."""
-        base_url = "https://quotes.toscrape.com"
-        links = retrieve_links(html_page, "https://quotes.toscrape.com")
-        assert links == {base_url+"/about", base_url+"/users/123"}
+        links = retrieve_links(html_page, self.base)
+        assert links == {self.base+"/about",
+                         self.base+"/page/2",
+                         self.base+"/users/page/3"}
 
     @pytest.mark.parametrize(
         "html_page",
-        [{"www.google.com", "/about", "https://site.org", "/users/123"}],
+        [{"www.google.com", "https://site.org", "/users/123"}],
         indirect=True
     )
-    def test_absolute_and_relative_urls(self, html_page):
-        """Find multiple mixed urls."""
-        base_url = "https://quotes.toscrape.com"
-        links = retrieve_links(html_page, "https://quotes.toscrape.com")
-        assert links == {
-            "www.google.com", "https://site.org",
-            base_url+"/about", base_url+"/users/123"
-        }
+    def test_outside_domain(self, html_page):
+        """Ignore links that lead out of domain of the base URL."""
+        links = retrieve_links(html_page, self.base)
+        assert links == {self.base+"/users/123"}
 
     @pytest.mark.parametrize("html_page", [{}], indirect=True)
     def test_no_urls(self, html_page):
         """Handle pages with no links."""
-        links = retrieve_links(html_page, "https://quotes.toscrape.com")
+        links = retrieve_links(html_page, self.base)
         assert links == set()
 
     @pytest.mark.parametrize(
         "html_page",
-        [["/users/1", "www.google.com", "/users/1"]],
+        [["/users/1", "/users/2", "/users/1"]],
         indirect=True
     )
     def test_duplicate_urls(self, html_page):
-        """Parse duplicate urls correctly."""
-        base_url = "https://quotes.toscrape.com"
-        links = retrieve_links(html_page, "https://quotes.toscrape.com")
-        assert links == {"www.google.com", base_url+"/users/1"}
+        """Parse duplicate URLs correctly."""
+        links = retrieve_links(html_page, self.base)
+        assert links == {self.base+"/users/1", self.base+"/users/2"}
+
+    @pytest.mark.parametrize(
+        "html_page",
+        [["/users/1", "/users/2", "/users/1/"]],
+        indirect=True
+    )
+    def test_duplicate_urls_distinct(self, html_page):
+        """Parse duplicate URLs that are formatted differently."""
+        links = retrieve_links(html_page, self.base)
+        assert links == {self.base+"/users/1", self.base+"/users/2"}
 
     def test_disallowed(self):
         """Avoid a disallowed link from a robot.txt file."""
