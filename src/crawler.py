@@ -130,7 +130,7 @@ def crawl(seed):
     doc_number = 0
     while queue:
         url = queue.pop(0)
-        if url in visited.values(): continue
+        if any(url in value for value in visited.values()): continue
 
         # Obeys politeness window of at least 6 seconds
         while time.time() - retrieval_time < 6:
@@ -139,10 +139,10 @@ def crawl(seed):
         # Tries to download page, handles request errors
         retrieval_time = time.time()
         try:
-            print(f"Visiting {url}...\n")
+            print(f"Visiting {url}")
             html = retrieve_page(url)
         except requests.exceptions.ConnectionError as e:
-            print(f"Connection error: {url}\nRe-trying...\n")
+            print(f"Connection error: {url}. Re-trying...")
             # Re-inserts the url back into the queue to retry
             queue.insert(0, url)
             continue
@@ -160,7 +160,8 @@ def crawl(seed):
         # Adds links that have not been visited to the queue
         links = retrieve_links(html, base)
         for link in links:
-            if link not in visited.values(): queue.append(link)
+            if not any(link in value for value in visited.values()):
+                queue.append(link)
 
     return visited, inverted_index
 

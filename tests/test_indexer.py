@@ -35,7 +35,8 @@ class TestRetrieveTokens:
                               ("paragraphs\n\nnecessarily\nwork properly", 4),
                               ("however, punctuation exists everywhere!", 4),
                               ("John Doe Leeds United Kingdom", 5),
-                              ("Ms. Tan www.google.com p.m e.g.", 5)])
+                              ("Ms. Tan www.google.com p.m e.g.", 5),
+                              ('"sentence double quotation marks"', 4)])
     @pytest.mark.benchmark(group="retrieve_tokens()")
     def test_words_in_strings(self, benchmark, string, expected):
         """Identify the correct number of tokens in a variety of strings.

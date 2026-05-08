@@ -11,8 +11,10 @@ from nltk.tokenize import word_tokenize
 def retrieve_tokens(text):
     """Retrieve significant words from provided text."""
     text = text.lower()
-    # Removes apostrophes: e.g. can't -> cant
+    # Removes apostrophes (e.g. can't -> cant) and double quotes
     text = text.replace("'", "")
+    # Replaces all types of double quotes with spaces
+    text = text.replace('"', " ").replace("”", " ").replace("“", " ")
     # Replaces hyphens with spaces: e.g. hand-drawn -> hand drawn
     text = text.replace("-", " ")
 
@@ -48,7 +50,7 @@ def index(html, page_number, inverted_index):
     
     for token in tokens:
         if token in inverted_index:
-            inverted_index[token].add({page_number: tokens[token]})
+            inverted_index[token][page_number] = tokens[token]
         else: inverted_index[token] = {page_number: tokens[token]}
 
     return len(tokens)
