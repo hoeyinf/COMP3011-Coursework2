@@ -106,6 +106,13 @@ class TestRetrieveTokens:
         words = benchmark(retrieve_tokens, string)
 
         assert len(words) < count, words
+        
+    @pytest.mark.benchmark(group="retrieve_tokens()")
+    def test_positions(self, benchmark):
+        """Correct token position in document."""
+        words = benchmark(retrieve_tokens, "dog chased cat chases rat rats cat")
+        dict = {"dog": [0], "chase": [1, 3], "cat": [2, 6], "rat": [4, 5]}
+        assert words == dict
 
     def test_unicode(self):
         """Unicode text"""
