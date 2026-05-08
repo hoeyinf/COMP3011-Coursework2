@@ -26,5 +26,5 @@ if __name__=="__main__":
                 dicts.append(pickle.load(f))
             except EOFError:
                 break
-    dicts[1].keys
+    print(dict(islice(dicts[0].items(), 10)))
     print(dict(islice(dicts[1].items(), 10)))

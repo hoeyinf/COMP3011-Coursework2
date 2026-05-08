@@ -19,19 +19,22 @@ def retrieve_tokens(text):
     # Tokenizes the text
     tokens = word_tokenize(text, 'english')
 
-    # Removes stopwords
+    # Removes stopwords and single punctuation marks
     stop_words = set(stopwords.words('english'))
-    tokens = [token for token in tokens if token not in stop_words]
+    tokens = [token for token in tokens if token not in stop_words and token not in string.punctuation]
     
     # Performs stemming
     stemmer = SnowballStemmer('english')
-    stems = set()
-    [stems.add(stemmer.stem(token)) for token in tokens]
+    stems = []
+    [stems.append(stemmer.stem(token)) for token in tokens]
     
-    # Removes single punctuation marks
-    [stems.discard(punc) for punc in string.punctuation]
+    # Creates dictionary of stems and their positions (list) in the document
+    stem_dict = dict()
+    for i, token in enumerate(stems):
+        if token in stem_dict: stem_dict[token].append(i)
+        else: stem_dict[token] = [i]
 
-    return stems
+    return stem_dict
 
 
 def index(html, page_number, inverted_index):
@@ -45,8 +48,7 @@ def index(html, page_number, inverted_index):
     
     for token in tokens:
         if token in inverted_index:
-            inverted_index[token].add(page_number)
-        else:
-            inverted_index[token] = {page_number}
+            inverted_index[token].add({page_number: tokens[token]})
+        else: inverted_index[token] = {page_number: tokens[token]}
 
     return len(tokens)

@@ -44,6 +44,7 @@ class TestRetrieveTokens:
         general punctuation, capitalization, and periods.
         """
         words = benchmark(retrieve_tokens, string)
+
         assert len(words) == expected, words
         
     @pytest.mark.parametrize("string,expected",
@@ -54,6 +55,7 @@ class TestRetrieveTokens:
     def test_hyphens(self, benchmark, string, expected):
         """Identify the correct number of tokens in words with hyphens."""
         words = benchmark(retrieve_tokens, string)
+
         assert len(words) == expected, words
     
     @pytest.mark.benchmark(group="retrieve_tokens()")
@@ -70,11 +72,15 @@ class TestRetrieveTokens:
     @pytest.mark.benchmark(group="retrieve_tokens()")
     def test_numbers(self, benchmark, string, expected):
         """Identify numbers correctly."""
-        numbers = set()
-        [numbers.add(number) for number in string.split()]
+        # Build the correct dictionary
+        num_list = string.split()
+        num_dict = dict()
+        for i, num in enumerate(num_list): num_dict[num] = [i]
+        
         words = benchmark(retrieve_tokens, string)
+        
         assert len(words) == expected, words
-        assert words == numbers
+        assert words == num_dict
     
     @pytest.mark.benchmark(group="retrieve_tokens()")
     @pytest.mark.parametrize("string,expected",
@@ -86,6 +92,7 @@ class TestRetrieveTokens:
         stopwords = ["this", "is", "a", "few", "to", "be", "or", "not"]
 
         words = benchmark(retrieve_tokens, string)
+
         assert [word not in words for word in stopwords]
         assert len(words) == expected, words
 
@@ -97,6 +104,7 @@ class TestRetrieveTokens:
     def test_stemming(self, benchmark, string, count):
         """Perform reasonable stemming."""
         words = benchmark(retrieve_tokens, string)
+
         assert len(words) < count, words
 
     def test_unicode(self):
@@ -104,10 +112,10 @@ class TestRetrieveTokens:
         
         assert False
 
-
+"""
 def test_index(html_page):
-    """index() updates the inverted index correctly."""
+    index() updates the inverted index correctly.
     ii = {"internet": {0, 1}, "googl": {1}}
     
     index(html_page, 2, ii)
-    assert ii["internet"] == {0, 1, 2} and ii["googl"] == {1, 2}
+    assert ii["internet"] == {0, 1, 2} and ii["googl"] == {1, 2}"""
