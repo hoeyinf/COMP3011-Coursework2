@@ -41,7 +41,6 @@ def index(html, page_number, inverted_index):
     for footer in soup.find_all("footer"):
         footer.decompose()
 
-
     tokens = retrieve_tokens(soup.get_text())
     
     for token in tokens:
@@ -50,4 +49,4 @@ def index(html, page_number, inverted_index):
         else:
             inverted_index[token] = {page_number}
 
-    return inverted_index
+    return len(tokens)

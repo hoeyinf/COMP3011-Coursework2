@@ -139,25 +139,23 @@ def crawl(seed):
         # Tries to download page, handles request errors
         retrieval_time = time.time()
         try:
+            print(f"Visiting {url}...\n")
             html = retrieve_page(url)
         except requests.exceptions.ConnectionError as e:
-            print(f"Connection error: {url}")
-            print(e)
+            print(f"Connection error: {url}\nRe-trying...\n")
             # Re-inserts the url back into the queue to retry
-            queue.insert(1, url)
-            print(queue[0:3])
+            queue.insert(0, url)
             continue
         except requests.exceptions.HTTPError as e:
             if e.response.status_code != 404: print(e)
             continue
         
-        # Adds page to visited dictionary
-        visited[doc_number] = url
-        print(url)
-        
         # Indexes the page
-        index(html, doc_number, inverted_index)
+        doc_terms = index(html, doc_number, inverted_index)
         doc_number += 1
+
+        # Adds page and its number of terms to document dictionary
+        visited[doc_number] = [url, doc_terms]
         
         # Adds links that have not been visited to the queue
         links = retrieve_links(html, base)
