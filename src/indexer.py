@@ -10,13 +10,10 @@ from nltk.tokenize import word_tokenize
 
 def retrieve_tokens(text):
     """Retrieve significant words from provided text."""
+    # Lowercase + removes/replaces apostrophes, double quotes, and hyphens
     text = text.lower()
-    # Removes apostrophes (e.g. can't -> cant) and double quotes
-    text = text.replace("'", "")
-    # Replaces all types of double quotes with spaces
-    text = text.replace('"', " ").replace("”", " ").replace("“", " ")
-    # Replaces hyphens with spaces: e.g. hand-drawn -> hand drawn
-    text = text.replace("-", " ")
+    replace = str.maketrans({"'": "", '"': " ", "”": " ", "“": " ", "-": " "})
+    text = text.translate(replace)
 
     # Tokenizes the text
     tokens = word_tokenize(text, 'english')
