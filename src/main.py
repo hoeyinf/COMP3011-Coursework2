@@ -11,12 +11,18 @@ def build(options:list[str], fname:str):
         print("Incorrect usage. Must be: build")
         return
 
+    # User can input a different website if they want to.
     website = input("Enter website (default=https://quotes.toscrape.com): ")
     if website == "": website ="https://quotes.toscrape.com"
     
     docs, index = crawl(website)
+    if not all([docs, index]):
+        print("Too many connection errors. Check your internet access.")
+        return
+
     print(f"Finished crawling website. {len(docs)} pages found with "
           f"{len(index)} terms indexed.")
+
     # Writes the resulting dictionaries as binary using pickle
     with open(fname, "wb") as f:
         pickle.dump(docs, f)
@@ -74,6 +80,7 @@ def find(query:str, inverted_index):
 def main_loop(inverted_index):
     fname = os.path.dirname(__file__) + '/../data/inverted_index.p'
 
+    # Displays the options
     print("-----------------------OPTIONS-----------------------\n"
           "build -\tcrawls a website to build an inverted index\n"
           "load  -\tloads a built inverted index\n"
@@ -84,6 +91,7 @@ def main_loop(inverted_index):
     option = input("Enter an option: ")
     options = option.split()
     
+    # Selects the option based on user input
     if options[0] == "build": build(options, fname)
     elif options[0] == "load":
         inverted_index = load(options, fname,inverted_index)

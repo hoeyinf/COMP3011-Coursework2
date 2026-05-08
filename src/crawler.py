@@ -5,13 +5,13 @@ import time
 from bs4 import BeautifulSoup
 from indexer import index
 from urllib.parse import urlparse, parse_qs, urlunparse, urlencode
-
+from urllib import robotparser
+from random import randint
 
 def normalize_link(link):
     """Normalizes a link."""
 
-    # Converts to lowercase and removes "www."
-    link = link.casefold()
+    # Removes "www."
     link = link.replace("www.", "")
     
     # Changes all links to start with https://
@@ -120,19 +120,32 @@ def crawl(seed):
     visited = dict()
     inverted_index = dict()
     retrieval_time = time.time() - 6
-    # Finds the base URL
+    
+    # Checks the website URL format and finds the base URL
     seed = normalize_link(seed)
     parsed = urlparse(seed)
+    if not all([parsed.scheme, parsed.netloc]):
+        print("Provided website is not a proper URL.")
+        return
     base = f"https://{parsed.netloc}"
+    
+    # Checks for a robot.txt file
+    rp = robotparser.RobotFileParser()
+    rp.set_url(f"{base}/robots.txt")
+    rp.read()
 
     # Initializes queue and loops until it is empty.
     queue = [seed]
     doc_number = 0
+    retry = 0
+    connection = 0
     while queue:
         url = queue.pop(0)
+        # Avoids visited URLs and disallowed URLs
         if any(url in value for value in visited.values()): continue
+        if not rp.can_fetch("*", url): continue
 
-        # Obeys politeness window of at least 6 seconds
+        # Ensures a politeness window of at least 6 seconds
         while time.time() - retrieval_time < 6:
             time.sleep(1)
 
@@ -142,14 +155,26 @@ def crawl(seed):
             print(f"Visiting {url}")
             html = retrieve_page(url)
         except requests.exceptions.ConnectionError as e:
-            print(f"Connection error: {url}. Re-trying...")
-            # Re-inserts the url back into the queue to retry
-            queue.insert(0, url)
-            continue
+            # Retries requests up to 3 times when ConnectionError
+            connection += 1
+            if connection > 5: return [False, False]
+            if retry > 3:
+                print("Cannot access URL. Skipping...")
+                retry = 0
+                continue
+            else:
+                print(f"Connection error: {url}. Re-trying...")
+                retry += 1
+                # Re-inserts the url back into the queue to retry
+                queue.insert(0, url)
+                continue
         except requests.exceptions.HTTPError as e:
             if e.response.status_code != 404: print(e)
             continue
         
+        retry = 0
+        connection = 0
+
         # Indexes the page
         doc_terms = index(html, doc_number, inverted_index)
 
@@ -161,7 +186,10 @@ def crawl(seed):
         links = retrieve_links(html, base)
         for link in links:
             if not any(link in value for value in visited.values()):
-                queue.append(link)
+                if rp.can_fetch("*", url): queue.append(link)
+        
+        # Randomizes wait time
+        time.sleep(randint(6, 9))
 
     return visited, inverted_index
 
