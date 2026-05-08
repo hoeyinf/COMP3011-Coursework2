@@ -1,30 +1,105 @@
+import os.path
 import pickle
 import nltk
-from itertools import islice
-
-import os.path
 from crawler import crawl
+from search import query_tokens, search
+
+
+def build(options:list[str], fname:str):
+    """Option to crawl website and build the inverted index."""
+    if len(options) != 1:
+        print("Incorrect usage. Must be: build")
+        return
+
+    website = input("Enter website (default=https://quotes.toscrape.com): ")
+    if website == "": website ="https://quotes.toscrape.com"
+    
+    docs, index = crawl(website)
+    print(f"Finished crawling website. {len(docs)} pages found with "
+          f"{len(index)} terms indexed.")
+    # Writes the resulting dictionaries as binary using pickle
+    with open(fname, "wb") as f:
+        pickle.dump(docs, f)
+        pickle.dump(index, f)
+    print("Inverted index saved successfully in data/inverted_index.p")
+    
+
+def load(options:list[str], fname:str, inverted_index:list[dict, dict]):
+    """Option to load a build inverted index."""
+    if len(options) != 1: print("Incorrect usage. Must be: load")
+    # Checks that inverted index exists
+    elif not os.path.exists(fname):
+        print("Can not find the inverted index. Use build before load")
+    else:
+        inverted_index.clear()
+        # Loads both dictionaries with pickle
+        with open(fname, "rb") as f:
+            inverted_index.append(pickle.load(f))
+            inverted_index.append(pickle.load(f))
+        print("Inverted index loaded successfully")
+
+
+def print_index(args:str, inverted_index):
+    """Option to print a word's inverted index."""
+    if len(args) != 2: print("Incorrect usage. Must be: print <single-word>")
+    elif inverted_index == []:
+        print("Inverted index not loaded. Use load before print")
+    else:
+        # Normalizes the entered word
+        stem = query_tokens(args[1])[0]
+        print(f"{args[1]} normalized to index term {stem}")
+        # Prints index if it exists
+        if stem in inverted_index[1]:
+            print(f"Inverted index for {stem}\n{inverted_index[1][stem]}")
+            # Prints relevant document names for reference
+            for doc in inverted_index[1][stem]:
+                print(f"{doc}: {inverted_index[0][doc][0]}:")
+        else: print(f"No index found for {stem}")
+
+
+def find(query:str, inverted_index):
+    """Option to find pages containing the search query."""
+    if len(query) == 1: print("Empty query. Must be: find <search query>")
+    elif inverted_index == []:
+        print("Inverted index not loaded. Use load before find")
+    else:
+        results = search(" ".join(query[1:]),
+                         inverted_index[0],
+                         inverted_index[1])
+
+        [print(result) for result in results]
+        if len(results) == 0: print("No matching pages found.")
+
+
+def main_loop(inverted_index):
+    fname = os.path.dirname(__file__) + '/../data/inverted_index.p'
+
+    print("-----------------------OPTIONS-----------------------\n"
+          "build -\tcrawls a website to build an inverted index\n"
+          "load  -\tloads a built inverted index\n"
+          "print -\tprints the inverted index for a given word\n"
+          "find  -\tfind all relevant pages for a search query\n"
+          "quit  -\texit the program\n"
+          "-----------------------------------------------------\n")
+    option = input("Enter an option: ")
+    options = option.split()
+    
+    if options[0] == "build": build(options, fname)
+    elif options[0] == "load":
+        inverted_index = load(options, fname,inverted_index)
+    elif options[0] == "print": print_index(options, inverted_index)
+    elif options[0] == "find": find(options, inverted_index)
+    elif option == "quit": exit(0)
+    else: print("Invalid option entered")
+
 
 if __name__=="__main__":
     
+    # Necessary downloads for parsing tokens
     nltk.download('punkt_tab')
     nltk.download('stopwords')
-
-    visited, inverted_index = crawl("https://quotes.toscrape.com")
-
-    # Remember to implement file handling errors later
-    with open(os.path.dirname(__file__) +
-              '/../data/inverted_index.p', "wb") as f:
-        pickle.dump(visited, f)
-        pickle.dump(inverted_index, f)
-        
-    dicts = []
-    with open(os.path.dirname(__file__) +
-              '/../data/inverted_index.p', "rb") as f:
-        while True:
-            try:
-                dicts.append(pickle.load(f))
-            except EOFError:
-                break
-    print(dict(islice(dicts[0].items(), 10)))
-    print(dict(islice(dicts[1].items(), 10)))
+    
+    print("\nSearch Engine Tool for COMP3011\n")
+    
+    inverted_index = []
+    while True: main_loop(inverted_index)

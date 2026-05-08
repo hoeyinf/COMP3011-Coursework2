@@ -16,7 +16,8 @@ def query_tokens(query):
     text = text.translate(replace)
     tokens = word_tokenize(text, 'english')
     stop_words = set(stopwords.words('english'))
-    tokens = [token for token in tokens if token not in stop_words and token not in string.punctuation]
+    tokens = [token for token in tokens
+              if token not in stop_words and token not in string.punctuation]
     stemmer = SnowballStemmer('english')
     stems = []
     [stems.append(stemmer.stem(token)) for token in tokens]
@@ -31,21 +32,26 @@ def relevant_documents(tokens, inverted_index):
     min_n = 100000
     min_i = -1
     sets = []
-    for i, token in enumerate(tokens):
-        if min_n > len(inverted_index[token]):
-            min_n = len(inverted_index[token])
-            min_i = i
-        
-        # Builds list of documents
-        sets.append(list(inverted_index[token].keys()))
-        
+    tokens = [token for token in tokens if token in inverted_index]
     
-    # Finds matching documents
-    documents = set(sets[min_i])
-    for i in range(len(tokens)):
-        if i == min_n: continue
-        documents = documents.intersection(sets[i])
-    
+    # Search query contains no indexed tokens
+    if len(tokens) == 0: documents = []
+
+    else:
+        for i, token in enumerate(tokens):
+            if min_n > len(inverted_index[token]):
+                min_n = len(inverted_index[token])
+                min_i = i
+            
+            # Builds list of documents
+            sets.append(list(inverted_index[token].keys()))
+            
+        # Finds matching documents
+        documents = set(sets[min_i])
+        for i in range(len(tokens)):
+            if i == min_n: continue
+            documents = documents.intersection(sets[i])
+        
     return documents
 
 

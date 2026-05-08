@@ -23,12 +23,12 @@ def retrieve_tokens(text):
 
     # Removes stopwords and single punctuation marks
     stop_words = set(stopwords.words('english'))
-    tokens = [token for token in tokens if token not in stop_words and token not in string.punctuation]
+    tokens = [token for token in tokens
+              if token not in stop_words and token not in string.punctuation]
     
     # Performs stemming
     stemmer = SnowballStemmer('english')
-    stems = []
-    [stems.append(stemmer.stem(token)) for token in tokens]
+    stems = [stemmer.stem(token) for token in tokens]
     
     # Creates dictionary of stems and their positions (list) in the document
     stem_dict = dict()
