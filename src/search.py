@@ -28,19 +28,20 @@ def relevant_documents(tokens, inverted_index):
     """Find documents that only contain all the tokens."""
     
     # Finds token in the least documents
-    min_n = len(inverted_index[tokens[0]])
-    min_token = tokens[0]
+    min_n = 100000
+    min_i = -1
     sets = []
-    for token in tokens[1:]:
+    for i, token in enumerate(tokens):
         if min_n > len(inverted_index[token]):
             min_n = len(inverted_index[token])
-            min_token = token
+            min_i = i
         
         # Builds list of documents
-        sets.append(inverted_index[token].values())
+        sets.append(list(inverted_index[token].keys()))
+        
     
     # Finds matching documents
-    documents = set(sets[min_n])
+    documents = set(sets[min_i])
     for i in range(len(tokens)):
         if i == min_n: continue
         documents = documents.intersection(sets[i])
@@ -56,8 +57,8 @@ def tfidf(term, document, document_index):
     return tf * idf
 
 
-def rank_documents(query, inverted_index, document_index):
-    """Rank document relevance for a given query."""
+def search(query, document_index, inverted_index):
+    """Finds most relvent documents for a search query."""
     
     tokens = query_tokens(query)
     documents = relevant_documents(tokens, inverted_index)
@@ -67,12 +68,14 @@ def rank_documents(query, inverted_index, document_index):
     for i, document in enumerate(documents):
         scores.append([])
         for token in tokens:
-            scores[i].append(tfidf(token, document, document_index))
-    
+            scores[i].append(tfidf(inverted_index[token],
+                                   document,
+                                   document_index))
+
+    scores = [sum(score) for score in scores]
     # Sorts by score
-    ranks = [score for _, score in sorted(zip(scores, documents))]
-    ranks = ranks.reverse()
-    
+    ranks = [doc for _, doc in sorted(zip(scores, list(documents)))]
+    ranks.reverse()
     results = []
     [results.append(document_index[document][0]) for document in ranks]
     

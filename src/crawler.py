@@ -152,10 +152,10 @@ def crawl(seed):
         
         # Indexes the page
         doc_terms = index(html, doc_number, inverted_index)
-        doc_number += 1
 
         # Adds page and its number of terms to document dictionary
         visited[doc_number] = [url, doc_terms]
+        doc_number += 1
         
         # Adds links that have not been visited to the queue
         links = retrieve_links(html, base)
