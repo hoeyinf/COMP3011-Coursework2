@@ -1,6 +1,7 @@
 """Functions for query processing."""
 import string
 import unicodedata
+import math
 from nltk.corpus import stopwords
 from nltk.stem.snowball import SnowballStemmer
 from nltk.tokenize import word_tokenize
@@ -22,9 +23,11 @@ def query_tokens(query):
     
     return stems
 
-def tfidf():
+
+def tfidf(term, document, document_index):
+    """Calculate the TF-IDF score for a term in a document"""
+    tf = len(term[document]) / document_index[document][1]
     
-    # Calculate tf
-    
-    # Calculate idf
-    return
+    idf = math.log(len(document_index)/len(term))
+    return tf * idf
+
