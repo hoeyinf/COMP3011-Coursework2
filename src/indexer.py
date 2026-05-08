@@ -6,11 +6,17 @@ from nltk.corpus import stopwords
 from nltk.stem.snowball import SnowballStemmer
 from nltk.tokenize import word_tokenize
 
-# move these to main.py (run once)
 
-
-def retrieve_tokens(text):
-    """Retrieve significant words from provided text."""
+def retrieve_tokens(text:str) -> dict:
+    """Retrieve significant words from provided text.
+    
+    Args:
+        text(str): the (HTML) text to be parsed.
+    
+    Returns:
+        stem_dict (dict): dictionary of tokens, which documents they appear in,
+        and their positions in each document.
+    """
     # Normalizes unicode, folds diacritics, and lowercases
     text = unicodedata.normalize("NFKD", text)
     text = "".join(c for c in text if not unicodedata.combining(c)).casefold()
@@ -39,8 +45,17 @@ def retrieve_tokens(text):
     return stem_dict
 
 
-def index(html, page_number, inverted_index):
-    """Indexes the html page onto the inverted index."""
+def index(html:str, page_number:int, inverted_index:dict) -> int:
+    """Indexes the html page onto the inverted index.
+    
+    Args:
+        html (str): the HTML page to index.
+        page_number (int): the document number associated with the page.
+        inverted_index (dict): index to store tokens and their locations.
+        
+    Returns:
+        token_n (int): the number of tokens found in the HTML page.
+    """
     soup = BeautifulSoup(html, 'html.parser')
     # Ignores footer content
     for footer in soup.find_all("footer"):

@@ -5,9 +5,14 @@ from crawler import crawl
 from search import query_tokens, search
 
 
-def build(options:list[str], fname:str):
-    """Option to crawl website and build the inverted index."""
-    if len(options) != 1:
+def build(args:list[str], fname:str) -> None:
+    """Option to crawl website and build the inverted index.
+    
+    Args:
+        args (list): arguments entered by the user.
+        fname (str): filename for the inverted_index.
+    """
+    if len(args) != 1:
         print("Incorrect usage. Must be: build")
         return
 
@@ -30,9 +35,15 @@ def build(options:list[str], fname:str):
     print("Inverted index saved successfully in data/inverted_index.p")
     
 
-def load(options:list[str], fname:str, inverted_index:list[dict, dict]):
-    """Option to load a build inverted index."""
-    if len(options) != 1: print("Incorrect usage. Must be: load")
+def load(args:list[str], fname:str, inverted_index:list[dict, dict]) -> None:
+    """Option to load a build inverted index.
+    
+    Args:
+        args (list): arguments entered by the user.
+        fname (str): filename for the inverted_index.
+        inverted_index (list): list of dicts to store the loaded inverted index.
+    """
+    if len(args) != 1: print("Incorrect usage. Must be: load")
     # Checks that inverted index exists
     elif not os.path.exists(fname):
         print("Can not find the inverted index. Use build before load")
@@ -46,8 +57,14 @@ def load(options:list[str], fname:str, inverted_index:list[dict, dict]):
               f"total pages with {len(inverted_index[1])} terms indexed.")
 
 
-def print_index(args:str, inverted_index):
-    """Option to print a word's inverted index."""
+def print_index(args:str, inverted_index:list[dict, dict]) -> None:
+    """Option to print a word's inverted index.
+    
+    Args:
+        args (list): arguments entered by the user.
+        inverted_index (list): a loaded inverted index.
+    """
+    # Checks if word was entered or index is loaded
     if len(args) != 2: print("Incorrect usage. Must be: print <single-word>")
     elif inverted_index == []:
         print("Inverted index not loaded. Use load before print")
@@ -64,8 +81,14 @@ def print_index(args:str, inverted_index):
         else: print(f"No index found for {stem}")
 
 
-def find(query:str, inverted_index):
-    """Option to find pages containing the search query."""
+def find(query:str, inverted_index:list[dict, dict]) -> None:
+    """Option to find pages containing the search query.
+    
+    Args:
+        query (list): arguments entered by the user.
+        inverted_index (list): a loaded inverted index.
+    """
+    # Checks if query is empty or index is loaded
     if len(query) == 1: print("Empty query. Must be: find <search query>")
     elif inverted_index == []:
         print("Inverted index not loaded. Use load before find")
@@ -73,12 +96,17 @@ def find(query:str, inverted_index):
         results = search(" ".join(query[1:]),
                          inverted_index[0],
                          inverted_index[1])
-
+        print(f"Results ({len(results)} found):")
         [print(result) for result in results]
         if len(results) == 0: print("No matching pages found.")
 
 
-def main_loop(inverted_index):
+def main_loop(inverted_index:list[dict, dict]) -> None:
+    """Main command-line interface for the program.
+    
+    Args:
+        inverted_index (list): structure to store an inverted index.
+    """
     fname = os.path.dirname(__file__) + '/../data/inverted_index.p'
 
     # Displays the options

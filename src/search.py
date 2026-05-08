@@ -7,8 +7,15 @@ from nltk.stem.snowball import SnowballStemmer
 from nltk.tokenize import word_tokenize
 
 
-def query_tokens(query):
-    """Reduce query into tokens."""
+def query_tokens(query:str) -> list[str]:
+    """Reduce query into tokens.
+    
+    Args:
+        query (str): user inputted search query.
+        
+    Returns:
+        stems (str): corresponding tokens found from processing the query.
+    """
     # Uses the same process as retrieve_tokens() in indexer.py
     text = unicodedata.normalize("NFKD", query)
     text = "".join(c for c in text if not unicodedata.combining(c)).casefold()
@@ -25,9 +32,16 @@ def query_tokens(query):
     return stems
 
 
-def relevant_documents(tokens, inverted_index):
-    """Find documents that only contain all the tokens."""
+def relevant_documents(tokens:str, inverted_index:dict) -> set:
+    """Find documents that only contain all the tokens.
     
+    Args:
+        tokens (str): list of tokens to find the documents.
+        inverted_index (dict): inverted index of tokens.
+    
+    Returns:
+        documents (set): documents containing all the tokens.
+    """
     # Finds token in the least documents
     min_n = 100000
     min_i = -1
@@ -55,17 +69,34 @@ def relevant_documents(tokens, inverted_index):
     return documents
 
 
-def tfidf(term, document, document_index):
-    """Calculate the TF-IDF score for a term in a document"""
+def tfidf(term:dict, document:int, document_index:dict) -> float:
+    """Calculate the TF-IDF score for a term in a document.
+    
+    Args:
+        term (dict): index for the term beng scored.
+        document (int): document number for the page being scored.
+        document_index (dict): document index.
+    
+    Returns:
+        TF-IDF (float): TF-IDF score.
+    """
     tf = len(term[document]) / document_index[document][1]
     idf = math.log(len(document_index)/len(term))
     
     return tf * idf
 
 
-def search(query, document_index, inverted_index):
-    """Finds most relvent documents for a search query."""
+def search(query:str, document_index:dict, inverted_index:dict) -> list[str]:
+    """Finds most relevant documents for a search query.
     
+    Args:
+        query (str): user inputted search query.
+        document_index (dict): document index.
+        inverted_index (dict): inverted index of tokens.
+    
+    Returns:
+        results (list): list of URLs ordered by relevance to the search query.
+    """
     tokens = query_tokens(query)
     documents = relevant_documents(tokens, inverted_index)
     

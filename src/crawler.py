@@ -1,4 +1,5 @@
 """Functions for a web crawler."""
+
 import re
 import requests
 import time
@@ -8,8 +9,16 @@ from urllib.parse import urlparse, parse_qs, urlunparse, urlencode
 from urllib import robotparser
 from random import randint
 
-def normalize_link(link):
-    """Normalizes a link."""
+
+def normalize_link(link:str) -> str:
+    """Normalizes a link
+    
+    Args:
+        link (str): the link being normalized.
+    
+    Returns:
+        link (str): the normalized link
+    """
 
     # Removes "www."
     link = link.replace("www.", "")
@@ -50,19 +59,17 @@ def normalize_link(link):
     return link
 
 
-def retrieve_links(html, base):
-    """Retrieve the unique url links in an HTML page.
+def retrieve_links(html:str, base:str) -> set[str]:
+    """Retrieve the unique relative URLs in an HTML page.
     
     Args:
         html (str): the HTML page to be parsed.
         base (str): the website domain (base URL).
     
     Returns:
-        set: Unique links found.
+        links (set): all unique relative links found.
     """
-
     links = set()
-
     # Reads HTML, ignoring footer content
     soup = BeautifulSoup(html, "html.parser")
     for footer in soup.find_all("footer"):
@@ -88,16 +95,17 @@ def retrieve_links(html, base):
     return links
 
 
-def retrieve_page(url):
+def retrieve_page(url:str) -> str:
     """Retrieve an HTML page via a GET request.
     
     Args:
         url (str): the url used for the GET request
     
     Returns:
-        str: The HTML of the web page.
+        html (str): The HTML of the web page.
     
     Raises:
+        ConnectionError: A connection error.
         HTTPError: An HTTP error.
     """
     response = requests.get(url,
@@ -111,11 +119,15 @@ def retrieve_page(url):
     return response.text
 
 
-def crawl(seed):
+def crawl(seed:str) -> list[dict]:
     """Perform a web crawl using a provided seed URL.
     
     Args:
-        seeds (list): seed URL to start a crawl.
+        seeds (str): seed URL to start a crawl.
+    
+    Returns:
+        visited (dict): document index of all URLs visited in the crawl.
+        inverted_index (dict): inverted index of all terms in visited URLs.
     """
     visited = dict()
     inverted_index = dict()
