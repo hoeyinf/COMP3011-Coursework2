@@ -25,17 +25,18 @@ def html_page(request):
 class TestNormalizeLink:
     """Tests for normalize_link()."""
 
-    @pytest.mark.parametrize("url", ["https://Example.com",
-                                    "https://example.com/",
-                                    "www.example.com",
-                                    "https://www.example.com",
-                                    "http://example.com",
-                                    "https://example.com/page/1",
-                                    "https://example.com?page=1",
-                                    "https://example.com?search=friend",
-                                    "https://example.com?filter=new&search=leeds",
-                                    "https://example.com#bar",
-                                    "https://example.com:443"])
+    @pytest.mark.parametrize("url", [
+        "https://Example.com",
+        "https://example.com/",
+        "www.example.com",
+        "https://www.example.com",
+        "http://example.com",
+        "https://example.com/page/1",
+        "https://example.com?page=1",
+        "https://example.com?search=friend",
+        "https://example.com?filter=new&search=leeds",
+        "https://example.com#bar",
+        "https://example.com:443"])
     @pytest.mark.benchmark(group="normalize_link()")
     def test_links(self, benchmark, url):
         """Normalize URLS correctly, with performance testing.
@@ -47,10 +48,11 @@ class TestNormalizeLink:
         result = benchmark(normalize_link, link=url)
         assert result == "https://example.com"
 
-    @pytest.mark.parametrize("url", ["https://example.com?page=10",
-                                     "https://example.com/page/11",
-                                     "https://example.com/page=2"
-                                     "https://example.com?page=3"])
+    @pytest.mark.parametrize("url", [
+        "https://example.com?page=10",
+        "https://example.com/page/11",
+        "https://example.com/page=2"
+        "https://example.com?page=3"])
     def test_pages(self, url):
         """Do not remove pages that are not 1."""
         assert normalize_link(url) == url
@@ -88,11 +90,9 @@ class TestRetrieveLinks:
                          self.base+"/page/2",
                          self.base+"/users/page/3"}
 
-    @pytest.mark.parametrize(
-        "html_page",
+    @pytest.mark.parametrize("html_page",
         [{"www.google.com", "https://site.org", "/users/123"}],
-        indirect=True
-    )
+        indirect=True)
     def test_outside_domain(self, html_page):
         """Ignore links that lead out of domain of the base URL."""
         links = retrieve_links(html_page, self.base)

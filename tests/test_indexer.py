@@ -28,14 +28,14 @@ def html_page():
 class TestRetrieveTokens:
     """"Tests for retrieve_tokens()"""
 
-    @pytest.mark.parametrize("string,expected",
-                             [("", 0),
-                              ("single", 1),
-                              ("multiple types   whitespace\tused  example", 5),
-                              ("paragraphs\n\nnecessarily\nwork properly", 4),
-                              ("however, punctuation exists everywhere!", 4),
-                              ("Ms. Tan www.google.com p.m e.g.", 5),
-                              ('"sentence double quotation marks"', 4)])
+    @pytest.mark.parametrize("string,expected", [
+        ("", 0),
+        ("single", 1),
+        ("multiple      types   whitespace\tused testing\t \t example", 6),
+        ("multiple paragraphs.\n\nnecessarily\nwork properly", 5),
+        ("however, punctuation exists everywhere!", 4),
+        ("Ms. Tan www.google.com p.m e.g.", 5),
+        ('"sentence double quotation marks"', 4)])
     @pytest.mark.benchmark(group="retrieve_tokens()")
     def test_token_count(self, benchmark, string, expected):
         """Identify the correct number of tokens in a variety of strings,
@@ -70,10 +70,8 @@ class TestRetrieveTokens:
         
         assert list(tokens.keys()) == ["aeioucn23"], tokens
         
-    @pytest.mark.parametrize("string,expected",
-                             [("t-shirt", 1),
-                              ("hand-drawn", 2),
-                              ("em-dash", 2)])
+    @pytest.mark.parametrize("string,expected", [
+        ("t-shirt", 1), ("hand-drawn", 2), ("em-dash", 2)])
     @pytest.mark.benchmark(group="retrieve_tokens()")
     def test_hyphens(self, benchmark, string, expected):
         """Identify the correct number of tokens in words with hyphens."""
@@ -88,10 +86,10 @@ class TestRetrieveTokens:
                                           "2000's womens' o'donnell")
         assert len(tokens) == 7, tokens
         
-    @pytest.mark.parametrize("string,expected",
-                             [("1 256 987654", 3),
-                              ("3.1415", 1),
-                              ("3.000 12,345  1,024.20480 678.901,24", 4)])
+    @pytest.mark.parametrize("string,expected", [
+        ("1 256 987654", 3),
+        ("3.1415", 1),
+        ("3.000 12,345  1,024.20480 678.901,24", 4)])
     @pytest.mark.benchmark(group="retrieve_tokens()")
     def test_numbers(self, benchmark, string, expected):
         """Identify numbers correctly."""
@@ -106,24 +104,24 @@ class TestRetrieveTokens:
         assert tokens == num_dict
     
     @pytest.mark.benchmark(group="retrieve_tokens()")
-    @pytest.mark.parametrize("string,expected",
-                             [("this is a sentence", 1),
-                              ("this string contains a few stopwords", 3),
-                              ("to be or not to be", 0)])
+    @pytest.mark.parametrize("string,expected", [
+        ("this is a sentence", 1),
+        ("this string contains a few stopwords", 3),
+        ("to be or not to be that is the question", 1)])
     def test_stopwords(self, benchmark, string, expected):
         """Perform correct stopword removal."""
-        stopwords = ["this", "is", "a", "few", "to", "be", "or", "not"]
-
+        stopwords = ["this", "is", "a", "few", "to", "be", "or", "not", "that"
+                     "the"]
         tokens = benchmark(retrieve_tokens, string)
 
         assert [word not in tokens for word in stopwords]
         assert len(tokens) == expected, tokens
 
     @pytest.mark.benchmark(group="retrieve_tokens()")
-    @pytest.mark.parametrize("string,count",
-                             [("write wrote written writes", 4),
-                              ("book books", 2),
-                              ("stare stared staring stares", 4),])
+    @pytest.mark.parametrize("string,count", [
+        ("write wrote written writes", 4),
+        ("book books booked bookie", 4),
+        ("stare stared staring stares", 4),])
     def test_stemming(self, benchmark, string, count):
         """Perform reasonable stemming."""
         tokens = benchmark(retrieve_tokens, string)

@@ -1,4 +1,4 @@
-def process_query(query):
+def query_tokens(query):
     """Reduce query into tokens and boolean terms"""
     return
 
