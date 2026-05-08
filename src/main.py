@@ -42,7 +42,8 @@ def load(options:list[str], fname:str, inverted_index:list[dict, dict]):
         with open(fname, "rb") as f:
             inverted_index.append(pickle.load(f))
             inverted_index.append(pickle.load(f))
-        print("Inverted index loaded successfully")
+        print(f"Inverted index loaded successfully: {len(inverted_index[0])} "
+              f"total pages with {len(inverted_index[1])} terms indexed.")
 
 
 def print_index(args:str, inverted_index):
@@ -53,13 +54,13 @@ def print_index(args:str, inverted_index):
     else:
         # Normalizes the entered word
         stem = query_tokens(args[1])[0]
-        print(f"{args[1]} normalized to index term {stem}")
         # Prints index if it exists
         if stem in inverted_index[1]:
-            print(f"Inverted index for {stem}\n{inverted_index[1][stem]}")
+            print(f"Inverted index for {args[1]}\n{inverted_index[1][stem]}\n")
             # Prints relevant document names for reference
+            print(f"Document number reference:")
             for doc in inverted_index[1][stem]:
-                print(f"{doc}: {inverted_index[0][doc][0]}:")
+                print(f"{doc}: {inverted_index[0][doc][0]}")
         else: print(f"No index found for {stem}")
 
 
@@ -81,7 +82,7 @@ def main_loop(inverted_index):
     fname = os.path.dirname(__file__) + '/../data/inverted_index.p'
 
     # Displays the options
-    print("-----------------------OPTIONS-----------------------\n"
+    print("\n-----------------------OPTIONS-----------------------\n"
           "build -\tcrawls a website to build an inverted index\n"
           "load  -\tloads a built inverted index\n"
           "print -\tprints the inverted index for a given word\n"
@@ -90,6 +91,11 @@ def main_loop(inverted_index):
           "-----------------------------------------------------\n")
     option = input("Enter an option: ")
     options = option.split()
+    
+    # Ignores empty user input
+    if len(options) == 0:
+        print("No option entered. Try again.")
+        return
     
     # Selects the option based on user input
     if options[0] == "build": build(options, fname)
