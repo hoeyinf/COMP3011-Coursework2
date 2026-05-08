@@ -11,7 +11,7 @@ def normalize_link(link):
     """Normalizes a link."""
 
     # Converts to lowercase and removes "www."
-    link = link.lower()
+    link = link.casefold()
     link = link.replace("www.", "")
     
     # Changes all links to start with https://

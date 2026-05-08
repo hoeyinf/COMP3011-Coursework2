@@ -1,5 +1,6 @@
 """Functions for an indexer."""
 import string
+import unicodedata
 from bs4 import BeautifulSoup
 from nltk.corpus import stopwords
 from nltk.stem.snowball import SnowballStemmer
@@ -10,8 +11,10 @@ from nltk.tokenize import word_tokenize
 
 def retrieve_tokens(text):
     """Retrieve significant words from provided text."""
-    # Lowercase + removes/replaces apostrophes, double quotes, and hyphens
-    text = text.lower()
+    # Normalizes unicode, folds diacritics, and lowercases
+    text = unicodedata.normalize("NFKD", text)
+    text = "".join(c for c in text if not unicodedata.combining(c)).casefold()
+    # Removes/replaces apostrophes, double quotes, and hyphens
     replace = str.maketrans({"'": "", '"': " ", "”": " ", "“": " ", "-": " "})
     text = text.translate(replace)
 

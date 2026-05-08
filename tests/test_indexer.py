@@ -31,22 +31,44 @@ class TestRetrieveTokens:
     @pytest.mark.parametrize("string,expected",
                              [("", 0),
                               ("single", 1),
-                              ("multiple significant words used precisely", 5),
+                              ("multiple types   whitespace\tused  example", 5),
                               ("paragraphs\n\nnecessarily\nwork properly", 4),
                               ("however, punctuation exists everywhere!", 4),
-                              ("John Doe Leeds United Kingdom", 5),
                               ("Ms. Tan www.google.com p.m e.g.", 5),
                               ('"sentence double quotation marks"', 4)])
     @pytest.mark.benchmark(group="retrieve_tokens()")
-    def test_words_in_strings(self, benchmark, string, expected):
-        """Identify the correct number of tokens in a variety of strings.
-        
-        Specifically: no words, one word, multiple words, paragraphs,
-        general punctuation, capitalization, and periods.
+    def test_token_count(self, benchmark, string, expected):
+        """Identify the correct number of tokens in a variety of strings,
+        including varying punctuation and whitespace.
         """
-        words = benchmark(retrieve_tokens, string)
+        tokens = benchmark(retrieve_tokens, string)
 
-        assert len(words) == expected, words
+        assert len(tokens) == expected, tokens
+    
+    @pytest.mark.benchmark(group="retrieve_tokens()")
+    def test_capitals(self, benchmark):
+        """Identify correct tokens from a sentence with capital letters."""
+        words = ["John", "Doe", "London", "England", "UK", "RSVP"]
+        tokens = benchmark(retrieve_tokens, " ".join(words))
+        
+        assert list(tokens.keys()) == [word.casefold() for word in words]
+        
+        
+    @pytest.mark.benchmark(group="retrieve_tokens()")
+    def test_unicode(self, benchmark):
+        """Normalizes different unicode correctly."""
+        words = ['"áéíóú"', '“a\u0301e\u0301i\u0301o\u0301u\u0301”']
+        tokens = benchmark(retrieve_tokens, " ".join(words))
+        
+        assert list(tokens.keys()) == ["aeiou"], tokens
+
+    @pytest.mark.benchmark(group="retrieve_tokens()")
+    def test_diacritics_and_symbols(self, benchmark):
+        """Folds diacritics and symbols correctly."""
+        words = ["áéíóúçñ²³", "äeiöücn23", "åeioucn23", "aeioucn23"]
+        tokens = benchmark(retrieve_tokens, " ".join(words))
+        
+        assert list(tokens.keys()) == ["aeioucn23"], tokens
         
     @pytest.mark.parametrize("string,expected",
                              [("t-shirt", 1),
@@ -55,16 +77,16 @@ class TestRetrieveTokens:
     @pytest.mark.benchmark(group="retrieve_tokens()")
     def test_hyphens(self, benchmark, string, expected):
         """Identify the correct number of tokens in words with hyphens."""
-        words = benchmark(retrieve_tokens, string)
+        tokens = benchmark(retrieve_tokens, string)
 
-        assert len(words) == expected, words
+        assert len(tokens) == expected, tokens
     
     @pytest.mark.benchmark(group="retrieve_tokens()")
     def test_apostrophes(self, benchmark):
         """Identify the correct tokens in a string with apostrophes."""
-        words = benchmark(retrieve_tokens,"don't can't Michael's people's "
+        tokens = benchmark(retrieve_tokens,"don't can't Michael's people's "
                                           "2000's womens' o'donnell")
-        assert len(words) == 7, words
+        assert len(tokens) == 7, tokens
         
     @pytest.mark.parametrize("string,expected",
                              [("1 256 987654", 3),
@@ -78,10 +100,10 @@ class TestRetrieveTokens:
         num_dict = dict()
         for i, num in enumerate(num_list): num_dict[num] = [i]
         
-        words = benchmark(retrieve_tokens, string)
+        tokens = benchmark(retrieve_tokens, string)
         
-        assert len(words) == expected, words
-        assert words == num_dict
+        assert len(tokens) == expected, tokens
+        assert tokens == num_dict
     
     @pytest.mark.benchmark(group="retrieve_tokens()")
     @pytest.mark.parametrize("string,expected",
@@ -92,10 +114,10 @@ class TestRetrieveTokens:
         """Perform correct stopword removal."""
         stopwords = ["this", "is", "a", "few", "to", "be", "or", "not"]
 
-        words = benchmark(retrieve_tokens, string)
+        tokens = benchmark(retrieve_tokens, string)
 
-        assert [word not in words for word in stopwords]
-        assert len(words) == expected, words
+        assert [word not in tokens for word in stopwords]
+        assert len(tokens) == expected, tokens
 
     @pytest.mark.benchmark(group="retrieve_tokens()")
     @pytest.mark.parametrize("string,count",
@@ -104,21 +126,16 @@ class TestRetrieveTokens:
                               ("stare stared staring stares", 4),])
     def test_stemming(self, benchmark, string, count):
         """Perform reasonable stemming."""
-        words = benchmark(retrieve_tokens, string)
+        tokens = benchmark(retrieve_tokens, string)
 
-        assert len(words) < count, words
+        assert len(tokens) < count, tokens
         
     @pytest.mark.benchmark(group="retrieve_tokens()")
     def test_positions(self, benchmark):
         """Correct token position in document."""
-        words = benchmark(retrieve_tokens, "dog chased cat chases rat rats cat")
+        tokens = benchmark(retrieve_tokens, "dog chased cat chases rat rats cat")
         dict = {"dog": [0], "chase": [1, 3], "cat": [2, 6], "rat": [4, 5]}
-        assert words == dict
-
-    def test_unicode(self):
-        """Unicode text"""
-        
-        assert False
+        assert tokens == dict
 
 """
 def test_index(html_page):
