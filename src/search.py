@@ -1,6 +1,26 @@
+"""Functions for query processing."""
+import string
+import unicodedata
+from nltk.corpus import stopwords
+from nltk.stem.snowball import SnowballStemmer
+from nltk.tokenize import word_tokenize
+
+
 def query_tokens(query):
-    """Reduce query into tokens and boolean terms"""
-    return
+    """Reduce query into tokens."""
+    # Uses the same process as retrieve_tokens() in indexer.py
+    text = unicodedata.normalize("NFKD", query)
+    text = "".join(c for c in text if not unicodedata.combining(c)).casefold()
+    replace = str.maketrans({"'": "", '"': " ", "”": " ", "“": " ", "-": " "})
+    text = text.translate(replace)
+    tokens = word_tokenize(text, 'english')
+    stop_words = set(stopwords.words('english'))
+    tokens = [token for token in tokens if token not in stop_words and token not in string.punctuation]
+    stemmer = SnowballStemmer('english')
+    stems = []
+    [stems.append(stemmer.stem(token)) for token in tokens]
+    
+    return stems
 
 def tfidf():
     

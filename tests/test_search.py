@@ -11,13 +11,13 @@ class TestQueryTokens:
     @pytest.mark.parametrize("query,expected",[
         ("albert einstein", ["albert", "einstein"]),
         ("love quotes", ["love", "quot"]),
-        ("horror movies 2026 upcoming", ["horror", "movie", "2026", "upcom"])])
+        ("horror movies 2026 upcoming", ["horror", "movi", "2026", "upcom"])])
     @pytest.mark.benchmark(group="query_tokens()")
     def test_basic(self, benchmark, query, expected):
         """Reduce query to appropriate tokens."""
         tokens = benchmark(query_tokens, query)
 
-        assert list(tokens.keys()) == expected
+        assert tokens == expected
         
     @pytest.mark.parametrize("query",[
         "is albert einstein alive",
@@ -43,6 +43,7 @@ class TestQueryTokens:
         tokens = benchmark(query_tokens, query)
 
         assert [c not in " ".join(tokens) for c in string.punctuation]
+        assert len(tokens) == 4, tokens
     
     
 def test_tfidf():
