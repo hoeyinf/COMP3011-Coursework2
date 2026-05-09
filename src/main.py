@@ -27,6 +27,8 @@ def build(args: list[str], fname: str) -> None:
     if not all([docs, index]):
         print("Too many connection errors. Check your internet access.")
         return
+    elif docs == "Bad" and index == "Url":
+        return
 
     print(f"Finished crawling website. {len(docs)} pages found with "
           f"{len(index)} terms indexed.")
@@ -86,7 +88,7 @@ def print_index(args: str, inverted_index: list[dict, dict]) -> None:
             for doc in inverted_index[1][stem]:
                 print(f"{doc}: {inverted_index[0][doc][0]}")
         else:
-            print(f"No index found for {stem}")
+            print(f"No index found for {args[1]}")
 
 
 def find(query: str, inverted_index: list[dict, dict]) -> None:

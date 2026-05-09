@@ -46,7 +46,11 @@ def relevant_documents(tokens: str, inverted_index: dict) -> set:
     min_n = 100000
     min_i = -1
     sets = []
-    tokens = [token for token in tokens if token in inverted_index]
+    
+    # If a token is not indexed, return 0 search results
+    for token in tokens:
+        if token not in inverted_index:
+            return set()
 
     # Search query contains no indexed tokens
     if len(tokens) == 0:
@@ -102,6 +106,7 @@ def search(query: str,
         results (list): list of URLs ordered by relevance to the search query.
     """
     tokens = query_tokens(query)
+    
     documents = relevant_documents(tokens, inverted_index)
 
     # Calculates the tfidf for each document for each term

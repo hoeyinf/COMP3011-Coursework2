@@ -141,11 +141,12 @@ def crawl(seed: str) -> list[dict]:
     retrieval_time = time.time() - 6
 
     # Checks the website URL format and finds the base URL
-    seed = normalize_link(seed)
     parsed = urlparse(seed)
     if not all([parsed.scheme, parsed.netloc]):
         print("Provided website is not a proper URL.")
-        return
+        return ["Bad", "Url"]
+    seed = normalize_link(seed)
+    parsed = urlparse(seed)
     base = f"https://{parsed.netloc}"
 
     # Checks for a robot.txt file
